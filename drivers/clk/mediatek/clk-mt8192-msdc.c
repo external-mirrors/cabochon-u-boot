@@ -45,7 +45,6 @@ static const struct mtk_gate msdc_top_clks[] = {
 extern const struct mtk_clk_tree mt8192_clk_tree;
 static int mt8192_msdc_top(struct udevice *dev)
 {
-	printf("msdc clock init\n");
 	return mtk_common_clk_gate_init(dev, &mt8192_clk_tree, msdc_top_clks);
 }
 

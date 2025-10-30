@@ -167,6 +167,7 @@
 #define CLK_TOP_NR_CLK			155
 #define CLK_TOP_CLK26M        156
 #define CLK_TOP_CLK32K        157
+#define CLK_TOP_MFGPLL        158
 
 /* INFRACFG */
 
