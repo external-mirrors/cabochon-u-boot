@@ -7,6 +7,8 @@
  * Written by Simon Glass <sjg@chromium.org>
  */
 
+#define DEBUG
+
 #define LOG_CATEGORY	LOGC_EVENT
 
 #include <event.h>
@@ -79,7 +81,7 @@ static int notify_static(struct event *ev)
 		if (spy->type == ev->type) {
 			int ret;
 
-			log_debug("Sending event %x/%s to spy '%s'\n", ev->type,
+			printf("Sending event %x/%s to spy '%s'\n", ev->type,
 				  event_type_name(ev->type), event_spy_id(spy));
 			if (spy->flags & EVSPYF_SIMPLE) {
 				const struct evspy_info_simple *simple;

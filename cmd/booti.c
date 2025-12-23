@@ -61,7 +61,7 @@ static int booti_start(struct bootm_info *bmi)
 			return -EINVAL;
 		}
 
-		debug("kernel image compression type %d size = 0x%08lx address = 0x%08lx\n",
+		printf("kernel image compression type %d size = 0x%08lx address = 0x%08lx\n",
 			ctype, comp_len, (ulong)dest);
 		decomp_len = comp_len * 10;
 		ret = image_decomp(ctype, 0, ld, IH_TYPE_KERNEL,

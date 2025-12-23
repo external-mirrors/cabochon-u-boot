@@ -77,4 +77,4 @@ static int timestamp_add_to_bootstage(void)
 
 	return 0;
 }
-EVENT_SPY_SIMPLE(EVT_LAST_STAGE_INIT, timestamp_add_to_bootstage);
+//EVENT_SPY_SIMPLE(EVT_LAST_STAGE_INIT, timestamp_add_to_bootstage);
