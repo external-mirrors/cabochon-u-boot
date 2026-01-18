@@ -339,10 +339,7 @@ struct msdc_host {
 	struct clk src_clk;	/* for SD/MMC bus clock */
 	struct clk src_clk_cg;	/* optional, MSDC source clock control gate */
 	struct clk h_clk;	/* MSDC core clock */
-
-	/* upstream linux clock */
-	struct clk axi_cg_clk;	/* optional, AXI clock */
-	struct clk ahb_cg_clk;	/* optional, AHB clock */
+	struct clk crypt_clk;
 
 	u32 src_clk_freq;	/* source clock */
 	u32 mclk;		/* mmc framework required bus clock */
@@ -1723,15 +1720,17 @@ static void msdc_init_hw(struct msdc_host *host)
 
 static void msdc_ungate_clock(struct msdc_host *host)
 {
+	printf("mtk_sd: Enabling 'source' clock...\n");
 	clk_enable(&host->src_clk);
-	clk_enable(&host->h_clk);
-	if (host->src_clk_cg.dev)
-		clk_enable(&host->src_clk_cg);
 
-	if (host->axi_cg_clk.dev)
-		clk_enable(&host->axi_cg_clk);
-	if (host->ahb_cg_clk.dev)
-		clk_enable(&host->ahb_cg_clk);
+	printf("mtk_sd: Enabling 'hclk' clock...\n");
+	clk_enable(&host->h_clk);
+
+	printf("mtk_sd: Enabling 'source-cg' clock...\n");
+	clk_enable(&host->src_clk_cg);
+
+	printf("mtk_sd: Enabling 'crypto' clock...\n");
+	clk_enable(&host->crypt_clk);
 }
 
 static int msdc_drv_probe(struct udevice *dev)
@@ -1772,7 +1771,7 @@ static int msdc_drv_probe(struct udevice *dev)
 	pinctrl_select_state(dev, "default");
 #endif
 
-	//msdc_ungate_clock(host);
+	msdc_ungate_clock(host);
 	msdc_init_hw(host);
 
 	upriv->mmc = &plat->mmc;
@@ -1804,18 +1803,32 @@ static int msdc_of_to_plat(struct udevice *dev)
 		return ret;
 
 	ret = clk_get_by_name(dev, "source", &host->src_clk);
-	if (ret < 0)
-		return ret;
+	if (ret == 0)
+		printf("mtk_sd: Clock 'source' found\n");
+		else if (ret != 0)
+			printf("mtk_sd: Clock 'source' not found\n");
+	return ret;
 
 	ret = clk_get_by_name(dev, "hclk", &host->h_clk);
-	if (ret < 0)
-		return ret;
+	if (ret == 0)
+		printf("mtk_sd: Clock 'hclk' found\n");
+		else if (ret != 0)
+		printf("mtk_sd: Clock 'hclk' not found\n");
+	return ret;
 
-	clk_get_by_name(dev, "source_cg", &host->src_clk_cg); /* optional */
+	ret = clk_get_by_name(dev, "source_cg", &host->src_clk_cg);
+	if (ret == 0)
+		printf("mtk_sd: Clock 'source_cg' found\n");
+		else if (ret != 0)
+			printf("mtk_sd: Clock 'source_cg' not found\n");
+	return ret;
 
-	/* upstream linux clock */
-	clk_get_by_name(dev, "axi_cg", &host->axi_cg_clk); /* optional */
-	clk_get_by_name(dev, "ahb_cg", &host->ahb_cg_clk); /* optional */
+	ret = clk_get_by_name(dev, "crypto", &host->crypt_clk);
+	if (ret == 0)
+		printf("mtk_sd: Clock 'crypto' found\n");
+		else if (ret != 0)
+			printf("mtk_sd: Clock 'crypto' not found\n");
+	return ret;
 
 #if CONFIG_IS_ENABLED(DM_GPIO)
 	gpio_request_by_name(dev, "wp-gpios", 0, &host->gpio_wp, GPIOD_IS_IN);
@@ -1979,6 +1992,16 @@ static const struct msdc_compatible mt8183_compat = {
 	.use_dma_mode = true,
 };
 
+static const struct msdc_compatible mt8186_compat = {
+	.clk_div_bits = 12,
+	.pad_tune0 = true,
+	.async_fifo = true,
+	.data_tune = true,
+	.busy_check = false,
+	.stop_clk_fix = false,
+	.use_internal_cd = true,
+};
+
 static const struct udevice_id msdc_ids[] = {
 	{ .compatible = "mediatek,mt7620-mmc", .data = (ulong)&mt7620_compat },
 	{ .compatible = "mediatek,mt7621-mmc", .data = (ulong)&mt7621_compat },
@@ -1990,6 +2013,7 @@ static const struct udevice_id msdc_ids[] = {
 	{ .compatible = "mediatek,mt8512-mmc", .data = (ulong)&mt8512_compat },
 	{ .compatible = "mediatek,mt8516-mmc", .data = (ulong)&mt8516_compat },
 	{ .compatible = "mediatek,mt8183-mmc", .data = (ulong)&mt8183_compat },
+	{ .compatible = "mediatek,mt8186-mmc", .data = (ulong)&mt8186_compat },
 	{}
 };
 
