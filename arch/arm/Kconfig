@@ -1081,8 +1081,8 @@ config ARCH_COREBOOT
 	select OF_CONTROL
 	select POSITION_INDEPENDENT
 	select POWER_DOMAIN
-	select VIDEO_COREBOOT
 	select PCI
+	imply VIDEO_COREBOOT
 	imply CMD_DM
 
 config ARCH_OWL
